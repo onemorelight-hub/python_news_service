@@ -8,8 +8,9 @@ from datetime import datetime
 # Import configuration and database
 from config import settings
 from database import connect_to_mongo, close_mongo_connection, db
+from routers.news_router import router as news_router
+from routers.classification_router import router as classification_router
 from schemas import HealthCheck
-from routers.news import router
 
 # Configure logging
 logger.remove()
@@ -41,9 +42,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
-app.include_router(router, prefix=settings.API_V1_STR)
-
+# Register both routers with different prefixes or tags
+app.include_router(news_router, prefix="/api/v1", tags=["News"])
+app.include_router(classification_router, prefix="/api/v1", tags=["Classification"])
 @app.get("/")
 async def root():
     """Root endpoint"""
@@ -68,10 +69,11 @@ async def health_check():
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
         port=8000,
         reload=True,
-        log_level="info"
+        log_level="debug"
     )
